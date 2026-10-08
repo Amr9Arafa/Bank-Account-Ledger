@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { getDb } from "@/server/db/client";
+import type { AppUser } from "@/server/auth/session";
 
 export type AccountBalance = {
   id: string;
@@ -23,8 +24,7 @@ type Row = {
   bank_balance: string;
 };
 
-// TODO(M4): take the signed-in user and filter by their organization_id.
-export async function getAccountBalances(): Promise<AccountBalance[]> {
+export async function getAccountBalances(user: AppUser): Promise<AccountBalance[]> {
   const rows = await getDb().execute<Row>(sql`
     select
       a.id,
@@ -42,6 +42,7 @@ export async function getAccountBalances(): Promise<AccountBalance[]> {
     from bank_accounts a
     left join transactions t on t.bank_account_id = a.id
     where a.archived_at is null
+      and a.organization_id = ${user.organizationId}
     group by a.id
     order by a.name
   `);

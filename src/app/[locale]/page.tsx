@@ -1,38 +1,26 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { formatEGP, type Locale } from "@/lib/money";
-import { DatabaseNotConfiguredError } from "@/server/db/client";
-import { getAccountBalances, type AccountBalance } from "@/server/ledger/balances";
+import { button, buttonSecondary, card } from "@/components/ui";
+import { requirePageUser } from "@/server/auth/page-guard";
+import { hasRole } from "@/server/auth/session";
+import { getAccountBalances } from "@/server/ledger/balances";
+import { countChequesDueSoon } from "@/server/ledger/queries";
 
 // Balances change whenever someone saves a transaction, so never cache this page.
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const user = await requirePageUser();
   const t = await getTranslations("Dashboard");
   const lang = locale as Locale;
+  const canWrite = hasRole(user, "accountant");
 
-  // A Server Component can load data directly: this runs on the server, queries
-  // Postgres, and only the finished HTML reaches the browser.
-  let accounts: AccountBalance[];
-  try {
-    accounts = await getAccountBalances();
-  } catch (err) {
-    const message = err instanceof DatabaseNotConfiguredError ? t("dbNotConfigured") : t("dbError");
-    if (!(err instanceof DatabaseNotConfiguredError)) console.error("Dashboard query failed", err);
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-10">
-        <h1 className="text-2xl font-semibold">{t("title")}</h1>
-        <p className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-900">
-          {message}
-        </p>
-      </main>
-    );
-  }
+  // Server Component: this runs on the server, queries Postgres directly,
+  // and only the finished HTML reaches the browser.
+  const [accounts, dueSoon] = await Promise.all([getAccountBalances(user), countChequesDueSoon(user)]);
 
   const total = accounts.reduce(
     (sum, a) => ({
@@ -44,9 +32,28 @@ export default async function DashboardPage({
   );
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="text-2xl font-semibold">{t("title")}</h1>
-      <p className="mt-1 text-sm text-slate-600">{t("subtitle")}</p>
+    <main className="mx-auto max-w-6xl px-4 py-8">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">{t("title")}</h1>
+          <p className="mt-1 text-sm text-slate-600">{t("subtitle")}</p>
+        </div>
+        {canWrite && (
+          <div className="flex gap-2">
+            <Link href="/transactions/new?type=transfer_in" className={button}>{t("newTransfer")}</Link>
+            <Link href="/transactions/new?type=cheque" className={buttonSecondary}>{t("newCheque")}</Link>
+          </div>
+        )}
+      </div>
+
+      <Link
+        href="/cheques"
+        className={`mt-4 block rounded-md border px-4 py-2 text-sm ${
+          dueSoon > 0 ? "border-amber-300 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600"
+        }`}
+      >
+        {t("dueSoon", { count: dueSoon })}
+      </Link>
 
       {accounts.length === 0 ? (
         <p className="mt-6 text-slate-600">{t("noAccounts")}</p>
@@ -54,7 +61,7 @@ export default async function DashboardPage({
         <>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {accounts.map((a) => (
-              <section key={a.id} className="rounded-lg border border-slate-200 bg-white p-4">
+              <section key={a.id} className={card}>
                 <h2 className="font-semibold">{a.name}</h2>
                 <p className="text-sm text-slate-500">
                   {a.bankName} · {a.issuesCheques ? t("issuesCheques") : t("transfersOnly")}
@@ -70,6 +77,9 @@ export default async function DashboardPage({
                     <Figure label={t("outstanding")}>{formatEGP(a.outstandingMinor, lang)}</Figure>
                   )}
                 </dl>
+                <Link href={`/accounts/${a.id}`} className="mt-4 inline-block text-sm font-medium text-sky-700 hover:underline">
+                  {t("openLedger")}
+                </Link>
               </section>
             ))}
           </div>

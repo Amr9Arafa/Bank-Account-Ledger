@@ -68,6 +68,7 @@ export const transactions = pgTable("transactions", {
   status: text("status").notNull(),
   clearedDate: date("cleared_date"),
   transferGroupId: uuid("transfer_group_id"),
+  statusReason: text("status_reason"),
   notes: text("notes"),
   createdBy: uuid("created_by").notNull().references(() => users.id),
   updatedBy: uuid("updated_by").notNull().references(() => users.id),
