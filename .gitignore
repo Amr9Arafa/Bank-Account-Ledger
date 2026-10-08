@@ -1,0 +1,19 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# env files (secrets never go in git; see .env.example)
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# misc
+.DS_Store
+npm-debug.log*
