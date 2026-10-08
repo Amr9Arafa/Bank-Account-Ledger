@@ -1,0 +1,21 @@
+{
+  "App": {
+    "title": "Bank Accounts Ledger",
+    "switchLanguage": "العربية"
+  },
+  "Dashboard": {
+    "title": "Accounts",
+    "subtitle": "Balances are calculated from every recorded transaction.",
+    "bookBalance": "Book balance",
+    "bookBalanceHint": "After all issued cheques",
+    "bankBalance": "Bank balance",
+    "bankBalanceHint": "What the bank statement should show",
+    "outstanding": "Outstanding cheques",
+    "issuesCheques": "Transfers and cheques",
+    "transfersOnly": "Transfers only",
+    "total": "All accounts",
+    "noAccounts": "No bank accounts yet.",
+    "dbNotConfigured": "The database connection is not configured yet (DATABASE_URL).",
+    "dbError": "Could not load balances. Please try again."
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "App": {
+    "title": "دفتر الحسابات البنكية",
+    "switchLanguage": "English"
+  },
+  "Dashboard": {
+    "title": "الحسابات",
+    "subtitle": "الأرصدة محسوبة من كل الحركات المسجلة.",
+    "bookBalance": "الرصيد الدفتري",
+    "bookBalanceHint": "بعد خصم كل الشيكات الصادرة",
+    "bankBalance": "رصيد البنك",
+    "bankBalanceHint": "المفروض يطابق كشف الحساب",
+    "outstanding": "شيكات لم تُصرف",
+    "issuesCheques": "تحويلات وشيكات",
+    "transfersOnly": "تحويلات فقط",
+    "total": "كل الحسابات",
+    "noAccounts": "لا توجد حسابات بنكية بعد.",
+    "dbNotConfigured": "اتصال قاعدة البيانات لم يُضبط بعد (DATABASE_URL).",
+    "dbError": "تعذر تحميل الأرصدة. حاول مرة أخرى."
+  }
+}
